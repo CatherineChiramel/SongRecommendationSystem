@@ -1,28 +1,35 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
-import java.util.stream.Stream;
 
+/**
+ * Recommender system for playlists using embedding space.
+ */
 public class Recommender {
 
     public HashMap<String, List<Double>> songVectorMap;
-    public int vectorSize;
+    public int vectorSize = 20;
+    protected String playlistsNameFile = "uniquePlaylists.csv";
+    protected String SongEmbeddingsFile = "processedPYKE.csv";
+    protected String playlistSongsFile = "playlistSongIdentifier.csv";
+
+
 
     public Recommender() {
-         this.songVectorMap = new HashMap<String, List<Double>>();
-         this.vectorSize = 20;
+         this.songVectorMap = new HashMap<>();
     }
+
 
     /**
      * Parses a CSV file containing the names of playlists and returns a list of playlist names
-     * @param filename
+     *
      * @return list of playlist names
      */
-    public List<String> getPlaylistNames(String filename) {
+    public List<String> getPlaylistNames() {
         String line = "";
         List<String> playlistNames = new ArrayList<String>();
         try {
-            BufferedReader br = new BufferedReader(new FileReader(filename));
+            BufferedReader br = new BufferedReader(new FileReader(this.playlistsNameFile));
             line = br.readLine();
             while((line = br.readLine()) != null) {
                 playlistNames.add(line);
@@ -36,19 +43,19 @@ public class Recommender {
     /**
      * Generates a map between playlist and the list of songs
      * @param playlistNames
-     * @param songFilename
+     *
      * @return hashmap between playlist and corresponding songs
      */
-    public HashMap<String, List<String>> generatePlaylistSongMap(List<String> playlistNames, String songFilename) {
+    public HashMap<String, List<String>> generatePlaylistSongMap(List<String> playlistNames) {
         HashMap<String, List<String>> playlistSongMap = new HashMap<String, List<String>>();
         for(int i=0; i<playlistNames.size(); i++){
             playlistSongMap.put(playlistNames.get(i), new ArrayList<String>());
         }
         String line = "";
         try {
-            BufferedReader br = new BufferedReader(new FileReader(songFilename));
+            BufferedReader br = new BufferedReader(new FileReader(this.playlistSongsFile));
             line = br.readLine();
-            List<String> songFileColumns = new ArrayList<String>();
+            List<String> songFileColumns;
             while ((line = br.readLine()) != null) {
                 songFileColumns = Arrays.asList(line.split(","));
                 String songIdentifier = "http://upb.de/song/" + songFileColumns.get(4);
@@ -65,18 +72,16 @@ public class Recommender {
 
     /**
      * Generate a map from song identifiers to their respective vectors from the embeddings file.
-     * @param songVectorFile file that contains the song embeddings
+     *
      * @return
      */
-    public HashMap<String, List<Double>> createSongVectorMap(String songVectorFile) {
-        //String songVectorFile = "PYKE_50_embd.csv";
-        //HashMap<String, List<Double>> songVectorMap = new HashMap<String, List<Double>>();
+    public HashMap<String, List<Double>> createSongVectorMap() {
 
         List<String> vectorFileRow;
         List<Double> vectors;
         String line;
         try {
-            BufferedReader br = new BufferedReader(new FileReader(songVectorFile));
+            BufferedReader br = new BufferedReader(new FileReader(this.SongEmbeddingsFile));
             line = br.readLine();
             while((line = br.readLine()) != null) {
                 vectorFileRow = Arrays.asList(line.split(","));
@@ -147,15 +152,12 @@ public class Recommender {
                 .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
         int i=0;
         for(String key: sortedMap.keySet()) {
-            if(i == 9)
+            if(i == numRecommendations)
                 break;
             System.out.println(key + " :" + sortedMap.get(key)) ;
             recommendations.add(key);
             i++;
         }
-
-
-
         return recommendations;
     }
 
@@ -177,21 +179,50 @@ public class Recommender {
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
+
     public static void main(String [] args) {
         Recommender recommender = new Recommender();
-        List<String> playlistNames = recommender.getPlaylistNames("uniquePlaylists.csv");
-        HashMap<String, List<String>> playlistSongMap = recommender.generatePlaylistSongMap(playlistNames,"playlistSongIdentifier.csv");
-        System.out.println(playlistSongMap.get("00s Rock Anthems"));
-        recommender.createSongVectorMap("processedPYKE.csv");
+        List<String> playlistNames = recommender.getPlaylistNames();
+        HashMap<String, List<String>> playlistSongMap = recommender.generatePlaylistSongMap(playlistNames);
+        recommender.createSongVectorMap();
         List<String> songIdentifiers = playlistSongMap.get("00s Rock Anthems");
-
-        List<String> testSongIdentifiers = songIdentifiers.subList(songIdentifiers.size()-10, songIdentifiers.size());
-
-        songIdentifiers.subList(songIdentifiers.size() - 10, songIdentifiers.size()).clear();
-
+        Collections.shuffle(songIdentifiers);
+        List<String> testSongIdentifiers = songIdentifiers.subList(songIdentifiers.size()-20, songIdentifiers.size());
+        songIdentifiers.subList(songIdentifiers.size() - 20, songIdentifiers.size()).clear();
         List<Double> centroidVector = recommender.generateCentroidVector(playlistSongMap.get("00s Rock Anthems"));
         List<String> recommendations = recommender.recommendSongs(songIdentifiers, centroidVector, 10);
         System.out.println(recommendations);
+    }
 
+    public int getVectorSize() {
+        return this.vectorSize;
+    }
+
+    public void setVectorSize(int value) {
+        this.vectorSize = value;
+    }
+
+    public String getPlaylistsNameFile() {
+        return this.playlistsNameFile;
+    }
+
+    public void setPlaylistsNameFile(String filename) {
+        this.playlistsNameFile = filename;
+    }
+
+    public String getSongEmbeddingsFile() {
+        return this.SongEmbeddingsFile;
+    }
+
+    public void setSongEmbeddingsFile(String filename) {
+        this.SongEmbeddingsFile = filename;
+    }
+
+    public String getPlaylistSongsFile() {
+        return this.playlistSongsFile;
+    }
+
+    public void setPlaylistSongsFile(String filename) {
+        this.playlistSongsFile = filename;
     }
 }
