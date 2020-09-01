@@ -10,7 +10,7 @@ public class Recommender {
     public HashMap<String, List<Double>> songVectorMap;
     public int vectorSize = 20;
     protected String playlistsNameFile = "uniquePlaylists.csv";
-    protected String SongEmbeddingsFile = "processedPYKE.csv";
+    protected String SongEmbeddingsFile = "songEmbeddings.csv";
     protected String playlistSongsFile = "playlistSongIdentifier.csv";
 
 
@@ -59,6 +59,7 @@ public class Recommender {
             while ((line = br.readLine()) != null) {
                 songFileColumns = Arrays.asList(line.split(","));
                 String songIdentifier = "http://upb.de/song/" + songFileColumns.get(4);
+                //String songIdentifier =  songFileColumns.get(4);
                 if(!playlistSongMap.get(songFileColumns.get(3)).contains(songIdentifier)) {
                     playlistSongMap.get(songFileColumns.get(3)).add(songIdentifier);
                 }
@@ -108,7 +109,7 @@ public class Recommender {
     public List<Double> generateCentroidVector(List<String> songIdentifiers) {
         List<List<Double>> songVectors = new ArrayList<List<Double>>();
 
-        Double [] centroidVectorArray = new Double[20];
+        Double [] centroidVectorArray = new Double[500];
         Arrays.fill(centroidVectorArray, 0.0);
         for(int i=0; i<songIdentifiers.size(); i++) {
             if(this.songVectorMap.get(songIdentifiers.get(i)) != null)
@@ -191,6 +192,7 @@ public class Recommender {
         songIdentifiers.subList(songIdentifiers.size() - 20, songIdentifiers.size()).clear();
         List<Double> centroidVector = recommender.generateCentroidVector(playlistSongMap.get("00s Rock Anthems"));
         List<String> recommendations = recommender.recommendSongs(songIdentifiers, centroidVector, 10);
+
         System.out.println(recommendations);
     }
 
