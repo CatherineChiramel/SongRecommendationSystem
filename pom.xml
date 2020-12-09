@@ -20,5 +20,43 @@
         </plugins>
     </build>
 
+    <properties>
+        <slf4jVersion>1.7.10</slf4jVersion>
+        <wikidataToolkitVersion>0.11.0</wikidataToolkitVersion>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>1.11.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.3.6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20190722</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wikidata.wdtk</groupId>
+            <artifactId>wdtk-datamodel</artifactId>
+            <version>${wikidataToolkitVersion}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.wikidata.wdtk</groupId>
+            <artifactId>wdtk-wikibaseapi</artifactId>
+            <version>${wikidataToolkitVersion}</version>
+        </dependency>
+
+    </dependencies>
+
 
 </project>

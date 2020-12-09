@@ -15,7 +15,7 @@ public class KnowledgeGraph {
      */
     KnowledgeGraph(){
         this.prefixURI = "http://upb.de/Music#";
-        this.RDFfilename = "songRDF.owl";
+        this.RDFfilename = "MAKG.owl";
         this.addedFeatures = new ArrayList<>();
 //        try {
 //            this.writer = new PrintWriter(new BufferedWriter(new FileWriter(this.RDFfilename, true)));
@@ -56,15 +56,34 @@ public class KnowledgeGraph {
             List<String>  rowCSVList = Arrays.asList(rowCSV.split(","));
 
             int index = columnTitleList.indexOf(featureName);
-            if(!this.addedFeatures.contains(this.prefixURI +rowCSVList.get(index) )) {
-                this.addedFeatures.add(this.prefixURI +rowCSVList.get(index) );
-                this.writer.println("<!-- " + this.prefixURI + rowCSVList.get(index) + " -->");
-                this.writer.println("<prefix:" + featureName + " rdf:about=\"" + this.prefixURI + rowCSVList.get(index) + "\">");
-                this.writer.println("\t<rdf:type rdf:resource=\"" + this.prefixURI + featureName + "\"/>");
-                this.writer.println("\t<rdf:type rdf:resource=\"http://www.w3.org/2002/07/owl#Thing\"/>");
-                this.writer.println("</prefix:" +  featureName + ">");
-                this.writer.println();
-                this.writer.println();
+
+            if(featureName.equals("RelatedTo")) {
+                String[] relatedItems = rowCSVList.get(8).split("###");
+                for(String item: relatedItems) {
+                    if(!this.addedFeatures.contains(this.prefixURI + item)) {
+                        this.addedFeatures.add(this.prefixURI + item);
+                        this.writer.println("<!-- " + this.prefixURI + item + " -->");
+                        this.writer.println("<prefix:Song rdf:about=\"" + this.prefixURI + item + "\">");
+                        this.writer.println("\t<rdf:type rdf:resource=\"" + this.prefixURI + "Song\"/>");
+                        this.writer.println("\t<rdf:type rdf:resource=\"http://www.w3.org/2002/07/owl#Thing\"/>");
+                        this.writer.println("</prefix:Song>");
+                        this.writer.println();
+                        this.writer.println();
+                    }
+                }
+            }
+            else {
+                if(!this.addedFeatures.contains(this.prefixURI + featureName + rowCSVList.get(index) ) && (!rowCSVList.get(index).equals("NA"))) {
+                    this.addedFeatures.add(this.prefixURI + featureName + rowCSVList.get(index) );
+                    this.writer.println("<!-- " + this.prefixURI + featureName + "_"+ rowCSVList.get(index) + " -->");
+                    this.writer.println("<prefix:" + featureName + " rdf:about=\"" + this.prefixURI + featureName + "_" + rowCSVList.get(index) + "\">");
+                    this.writer.println("\t<rdf:type rdf:resource=\"" + this.prefixURI + featureName + "\"/>");
+                    this.writer.println("\t<rdf:type rdf:resource=\"http://www.w3.org/2002/07/owl#Thing\"/>");
+                    this.writer.println("</prefix:" +  featureName + ">");
+                    this.writer.println();
+                    this.writer.println();
+                }
+
             }
 
             this.writer.close();
@@ -92,7 +111,20 @@ public class KnowledgeGraph {
             this.writer.println("\t<rdf:type rdf:resource=\"http://www.w3.org/2002/07/owl#Thing\"/>");
             for(int i=0; i<properties.size(); i++) {
                 index = columnTitleList.indexOf(properties.get(i));
-                this.writer.println("\t<prefix:has" + properties.get(i) + " rdf:resource=\"" + this.prefixURI + rowCSVList.get(index)+ "\"/>");
+                if(index<rowCSVList.size())
+                    if(!rowCSVList.get(index).equals("NA")) {
+                        if(properties.get(i).equals("RelatedTo")) {
+                            String[] relatedItems = rowCSVList.get(index).split("###");
+                            for(String item: relatedItems) {
+                                this.writer.println("\t<prefix:isRelatedTo" + " rdf:resource=\"" + this.prefixURI + item+ "\"/>");
+
+                            }
+                        }
+                        else
+
+                            this.writer.println("\t<prefix:has" + properties.get(i) + " rdf:resource=\"" + this.prefixURI + properties.get(i) + "_" + rowCSVList.get(index)+ "\"/>");
+
+                    }
             }
             this.writer.println("</prefix:Song>");
             this.writer.println();
@@ -115,11 +147,17 @@ public class KnowledgeGraph {
             BufferedReader csvReader = new BufferedReader(new FileReader(songDataFile));
             String columnTitles = csvReader.readLine();
             String row;
+            int count = 0;
             while((row = csvReader.readLine()) != null) {
+//                if(count == 150)
+//                    break;
+                String[] rowList = row.split(",");
                 for(int i=0; i<properties.size(); i++) {
-                    this.addIndividualFeature(columnTitles, row, properties.get(i));
+                    if(i<rowList.length)
+                        this.addIndividualFeature(columnTitles, row, properties.get(i));
                 }
                 this.addIndividualSong(columnTitles, row, properties);
+                count ++;
             }
 
             csvReader.close();
@@ -141,24 +179,46 @@ public class KnowledgeGraph {
     }
 
     public static void main(String[] args) {
-        String songDataFile = "preprocessedSongData2.csv";
+        String songDataFile = "MusicBrainzAcousticBrain.csv";
         List<String> properties = new ArrayList<>();
         properties.add("Artist");
-        properties.add("Album");
-        properties.add("Popularity");
-        properties.add("Duration");
-        properties.add("Acousticness");
+        properties.add("Language");
+        properties.add("Country");
+        properties.add("ArtistGender");
+        properties.add("RelatedTo");
+//        properties.add("Popularity");
+//        properties.add("Duration");
+//        properties.add("Acousticness");
+//        properties.add("Danceability");
+//        properties.add("Energy");
+//        properties.add("Instrumentalness");
+//        properties.add("Key");
+//        properties.add("Liveness");
+//        properties.add("Loudness");
+//        properties.add("Audio_mode");
+//        properties.add("Tempo");
+//        properties.add("Time_signature");
+//        properties.add("Audio_valence");
+//        properties.add("Gender");
+        properties.add("Aggressive");
+        properties.add("Electronic");
+        properties.add("Happy");
+        properties.add("Party");
+        properties.add("Relaxed");
+        properties.add("Sad");
+        properties.add("Dark");
+        properties.add("Tone");
+        properties.add("DynamicComplexity");
+        properties.add("SpectralFlux");
+        properties.add("SpectralSkewness");
+        properties.add("SpectralEnergy");
+        properties.add("Dissonance");
+        properties.add("SpectralEntropy");
+        properties.add("PitchSalience");
+        properties.add("SpectralComplexity");
+        properties.add("BeatsCount");
+        properties.add("BeatsLoudness");
 
-        properties.add("Danceability");
-        properties.add("Energy");
-        properties.add("Instrumentalness");
-        properties.add("Key");
-        properties.add("Liveness");
-        properties.add("Loudness");
-        properties.add("Audio_mode");
-        properties.add("Tempo");
-        properties.add("Time_signature");
-        properties.add("Audio_valence");
 
         KnowledgeGraph kg = new KnowledgeGraph();
         kg.createKnowledgeGraph(songDataFile, properties);
