@@ -3,6 +3,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.*;
 
+
+/**
+ * Class to calculate percision@k, recall@k amd map@k for the recommendations
+ */
 public class EvaluateResults {
     Map<String, List<Integer>> playlistResults = new HashMap<>();
     List<Integer> k_Values = new ArrayList<>();
@@ -13,8 +17,6 @@ public class EvaluateResults {
         this.k_Values.add(20);
         this.k_Values.add(50);
         this.k_Values.add(100);
-
-
     }
 
     protected void getPrecision(String playlist) {
@@ -162,27 +164,27 @@ public class EvaluateResults {
 
     }
 
-    protected void MRR(String playlist) {
-        Double mrr = 0.0;
-        String csvRow = playlist + ",";
-        int songCount;
-
-        for(Integer index: this.playlistResults.get(playlist)){
-           mrr += (1/(double) (index + 1));
-        }
-
-        csvRow += mrr;
-
-        try{
-            FileWriter csvWriter = new FileWriter("DLSHLMRR.csv", true);
-            csvWriter.append(csvRow);
-            csvWriter.append("\n");
-            csvWriter.flush();
-            csvWriter.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+//    protected void MRR(String playlist) {
+//        Double mrr = 0.0;
+//        String csvRow = playlist + ",";
+//        int songCount;
+//
+//        for(Integer index: this.playlistResults.get(playlist)){
+//           mrr += (1/(double) (index + 1));
+//        }
+//
+//        csvRow += mrr;
+//
+//        try{
+//            FileWriter csvWriter = new FileWriter("DLSHLMRR.csv", true);
+//            csvWriter.append(csvRow);
+//            csvWriter.append("\n");
+//            csvWriter.flush();
+//            csvWriter.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public void MAP(String playlist) {
         int numRelevantSongs;
@@ -221,6 +223,33 @@ public class EvaluateResults {
         }
     }
 
+    public void getNonExistingPlaylists(List<String> validPlaylists) {
+        String line = "";
+        List<String> existingPlaylists = new ArrayList<>();
+
+        try {
+            BufferedReader br = new BufferedReader(new FileReader("DL-S200v8d500wRecall@K.csv"));
+            FileWriter csvWriter = new FileWriter("nonExistingPlaylists.csv", true);
+            while((line = br.readLine()) != null) {
+                String[] lineSplit = line.split(",");
+                existingPlaylists.add(lineSplit[0]);
+
+            }
+            for(String playlist: validPlaylists) {
+                if(!existingPlaylists.contains(playlist)){
+                    csvWriter.append(playlist);
+                    csvWriter.append("\n");
+                }
+            }
+            csvWriter.flush();
+            csvWriter.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
 
     public static void main(String[] args) {
@@ -236,7 +265,10 @@ public class EvaluateResults {
 //   //         evaluateResults.getRecall(playlist);
 //  //          evaluateResults.MRR(playlist);
 //        }
-        evaluateResults.readClassExpressionResults("SAccuracy#1.txt");
+       // evaluateResults.readClassExpressionResults("SAccuracy#1.txt");
  //       evaluateResults.averagePrecision();
+        EvaluateRecommender evalRecommender = new EvaluateRecommender();
+        List<String> existingPlaylists = evalRecommender.getValidPlaylists();
+        evaluateResults.getNonExistingPlaylists(existingPlaylists);
     }
 }

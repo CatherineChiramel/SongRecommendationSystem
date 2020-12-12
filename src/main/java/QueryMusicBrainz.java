@@ -12,9 +12,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Class to query the MusicBrainz API
+ */
 public class QueryMusicBrainz {
     protected List<String> existingSongs = new ArrayList<>();
 
+    /**
+     * Get the songs for which data is already retrieved.
+     */
     public void getExistingSongs() {
         try {
             BufferedReader csvReader = new BufferedReader(new FileReader("MusicBrainzEncodedFinal.csv"));
@@ -34,6 +40,10 @@ public class QueryMusicBrainz {
 
     }
 
+    /**
+     * Read the file containing all the song names
+     * @param filename
+     */
     public void readCSV(String filename) {
         int count = 0;
         try {
@@ -55,6 +65,11 @@ public class QueryMusicBrainz {
         }
     }
 
+    /**
+     * Method to get the valid MBID of a song from MusicBraiz API and write it to a file
+     * @param row
+     * @throws Exception
+     */
     public void getMBID(String row) throws Exception {
         String[] songInfoArray = row.split(",");
         List<String> songInfo = new ArrayList<String>(Arrays.asList(songInfoArray));
@@ -81,12 +96,12 @@ public class QueryMusicBrainz {
                     JSONObject artist = new JSONObject(artistCredits.get(0).toString());
                     //System.out.println(artist);
                     //if(songInfo.get(1).toLowerCase().contains(artist.get("name").toString().toLowerCase())) {
-                    //if(artist.get("name").toString().toLowerCase().contains(songInfo.get(1).toLowerCase())) {
+                    if(artist.get("name").toString().toLowerCase().contains(songInfo.get(1).toLowerCase())) {
                         //System.out.println(songInfo.get(2) + ": " + artist.get("name") + ", " + (String) new JSONObject(object.toString()).get("id") );
 
                         songInfo.add((String) new JSONObject(object.toString()).get("id"));
                         break;
-                    //}
+                    }
                 }
 
             }
@@ -97,10 +112,15 @@ public class QueryMusicBrainz {
 
     }
 
+    /**
+     * method to get year information from the api
+     * @param row
+     * @throws Exception
+     */
     public void getYear(String row) throws  Exception {
         String[] songInfoArray = row.split(",");
         List<String> songInfo = new ArrayList<String>(Arrays.asList(songInfoArray));
-        String uri = "https://musicbrainz.org/ws/2/recording?query=" + "Swingtheory" + "&fmt=json";
+        String uri = "https://musicbrainz.org/ws/2/recording?query=" + songInfo.get(3) + "&fmt=json";
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(uri))
@@ -120,7 +140,6 @@ public class QueryMusicBrainz {
                 if(recording.has("date")) {
                     songInfo.add(recording.get("date").toString().split("-")[0]);
                     System.out.println(recording.get("date"));
-                    //System.out.println(artist);
                     //if(songInfo.get(1).toLowerCase().contains(artist.get("name").toString().toLowerCase())) {
                     //if(artist.get("name").toString().toLowerCase().contains(songInfo.get(1).toLowerCase())) {
                     //System.out.println(songInfo.get(2) + ": " + artist.get("name") + ", " + (String) new JSONObject(object.toString()).get("id") );
@@ -138,6 +157,11 @@ public class QueryMusicBrainz {
 
     }
 
+    /**
+     * method to get the mbid of a record
+     * @param row
+     * @throws Exception
+     */
     public void getRecordInfo(String row) throws  Exception {
         String[] rowElements = row.split(",");
         List<String> songInfo = new ArrayList<String>(Arrays.asList(rowElements));
@@ -182,6 +206,11 @@ public class QueryMusicBrainz {
             this.writeToCSV(songInfo);
     }
 
+    /**
+     * method to get the release id of a song and the country in which it was released in
+     * @param row
+     * @throws Exception
+     */
     public void getReleaseInfo (String row) throws Exception {
         String[] rowElements = row.split(",");
         List<String> songInfo = new ArrayList<String>(Arrays.asList(rowElements));
@@ -233,6 +262,11 @@ public class QueryMusicBrainz {
 
     }
 
+    /**
+     * method to get information about the artist of a song
+     * @param row
+     * @throws Exception
+     */
     public void getArtistInfo(String row) throws Exception {
         String[] rowElements = row.split(",");
         List<String> songInfo = new ArrayList<String>(Arrays.asList(rowElements));
@@ -270,9 +304,6 @@ public class QueryMusicBrainz {
         QueryMusicBrainz musicBrainz = new QueryMusicBrainz();
         //musicBrainz.getExistingSongs();
         musicBrainz.readCSV("MusicBrainzEncoded.csv");
-
-
-       //musicBrainz.getYear("a");
 
     }
 }

@@ -2,14 +2,14 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Recommender system for playlists using embedding space.
+ * Class to generate recommendations for song playlists
  */
 public class Recommender {
 
     public HashMap<String, List<Double>> songVectorMap;
     public int vectorSize = 200;
     protected String playlistsNameFile = "uniquePlaylists.csv";
-    protected String SongEmbeddingsFile = "Basic200v8d500wEmbeddings.csv";
+    protected String SongEmbeddingsFile = "SMAEmbeddings.csv";
     protected String playlistSongsFile = "playlistSongs.csv";
 
 
@@ -73,13 +73,17 @@ public class Recommender {
 
     }
 
+    /**
+     *  Create a file with playlists and their centroid vectors
+     * @param playlistSongMap maps playlists to the list of songs contained in it
+     */
     public void createPlaylistVectorFile (HashMap<String, List<String>> playlistSongMap) {
         String playlist;
         List<Double> centroidVector = null;
         try {
 
             BufferedReader br = new BufferedReader(new FileReader("validPlaylists.csv"));
-            FileWriter csvWriter = new FileWriter("Basic200v8d500wPlaylistVector.csv");
+            FileWriter csvWriter = new FileWriter("SMAPlaylistVectors.csv");
             while((playlist = br.readLine()) != null) {
                 System.out.println(playlist);
                 System.out.println(playlistSongMap.get(playlist));
@@ -145,7 +149,7 @@ public class Recommender {
     /**
      * Generate a map from song identifiers to their respective vectors from the embeddings file.
      *
-     * @return
+     * @return Map containing the songs and their corresponding vectors
      */
     public HashMap<String, List<Double>> createSongVectorMap() {
 
@@ -185,21 +189,16 @@ public class Recommender {
      */
     public List<Double> generateCentroidVector(List<String> songIdentifiers, int dimension) {
         List<List<Double>> songVectors = new ArrayList<List<Double>>();
-
-
-
         Double [] centroidVectorArray = new Double[dimension];
         Arrays.fill(centroidVectorArray, 0.0);
         //System.out.println(songIdentifiers.size());
         for(int i=0; i<songIdentifiers.size(); i++) {
-
             if(this.songVectorMap.keySet().contains(songIdentifiers.get(i))  && this.songVectorMap.get(songIdentifiers.get(i)) != null)
                 songVectors.add(this.songVectorMap.get(songIdentifiers.get(i)));
-                //System.out.println("Song vector: "+ this.songVectorMap.get(songIdentifiers.get(i)));
         }
-        //System.out.println(songVectors);
         for(int i=0; i<songVectors.size(); i++) {
             for(int j=0; j<songVectors.get(0).size(); j++) {
+
                 centroidVectorArray[j] += songVectors.get(i).get(j);
             }
         }
@@ -207,7 +206,6 @@ public class Recommender {
             centroidVectorArray[i] = centroidVectorArray[i] / songIdentifiers.size();
         }
         List<Double> centroidVector = Arrays.asList(centroidVectorArray);
-
         return centroidVector;
     }
 
@@ -222,13 +220,11 @@ public class Recommender {
     public List<String> recommendSongs(List<String> songIdentifiers, List<Double> centroidVector, int numRecommendations) {
         HashMap<String, Double> songSimilarityMap = new HashMap<String, Double>();
         List<String> recommendations = new ArrayList<>();
-
         for(String key: this.songVectorMap.keySet()) {
             if(!songIdentifiers.contains(key)) {
                 songSimilarityMap.put(key, this.cosineSimilarity(centroidVector, this.songVectorMap.get(key)));
             }
         }
-
         LinkedHashMap<String, Double> sortedMap = new LinkedHashMap<>();
         songSimilarityMap.entrySet()
                 .stream()
@@ -236,9 +232,9 @@ public class Recommender {
                 .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
         int i=0;
         for(String key: sortedMap.keySet()) {
-            //if(i == numRecommendations)
-              //  break;
-            //System.out.println(key + " :" + sortedMap.get(key)) ;
+            if(i == numRecommendations)
+                break;
+            System.out.println(key + " :" + sortedMap.get(key)) ;
             recommendations.add(key);
             i++;
         }
@@ -265,7 +261,13 @@ public class Recommender {
         return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
     }
 
-
+    /**
+     * Method to check how many songs in the dataset are more similar to the playlist centroid vector than the least similar
+     * test song.
+     * @param playlist
+     * @param songIdentifiers
+     * @return
+     */
     protected int evaluateAssumption(String playlist, List<String> songIdentifiers) {
         List<String> testSongs = new ArrayList<>();
         Map<String, Double> songSimilarity = new HashMap<>();
@@ -277,19 +279,11 @@ public class Recommender {
             testSongs.add(songIdentifiers.get(i));
             count ++;
         }
-
         List<Double> playlistVector = this.generateCentroidVector(testSongs, this.vectorSize);
-
         for(int i=testSongs.size()-1; i>0; i--) {
-
-
-
-                Double similarity = this.cosineSimilarity(playlistVector, this.songVectorMap.get(testSongs.get(i)));
-                songSimilarity.put(testSongs.get(i), similarity);
-
-
+            Double similarity = this.cosineSimilarity(playlistVector, this.songVectorMap.get(testSongs.get(i)));
+            songSimilarity.put(testSongs.get(i), similarity);
         }
-
         LinkedHashMap<String, Double> sortedSongSimilarity = new LinkedHashMap<>();
         songSimilarity.entrySet()
                 .stream()
@@ -311,29 +305,17 @@ public class Recommender {
                 songCount ++;
 
         }
-        System.out.println("Target sim: " + targetSim);
         System.out.println(playlist +  ": " + songCount);
         return songCount;
-
-
     }
 
 
     public static void main(String [] args) {
         Recommender recommender = new Recommender();
         List<String> playlistNames = recommender.getPlaylistNames();
-        //System.out.println(playlistNames);
-        //System.out.println("the number of playlists" + playlistNames.size());
         HashMap<String, List<String>> playlistSongMap = recommender.generatePlaylistSongMap(playlistNames);
-        //System.out.println("the playlist song map size" + playlistSongMap.size());
         recommender.createSongVectorMap();
-//        int songCount = 0;
-//        for(String playlist: playlistNames) {
-//           songCount += recommender.evaluateAssumption(playlist, playlistSongMap.get(playlist));
-//        }
-//        System.out.println(songCount);
         //recommender.evaluateAssumption("Piano in the Background", playlistSongMap.get("Piano in the Background"));
-//        System.out.println(recommender.songVectorMap.keySet());
 //        List<String> songIdentifiers = play
         recommender.createPlaylistVectorFile(playlistSongMap);
 //        recommender.sortPlaylistSize(playlistSongMap);
@@ -344,8 +326,6 @@ public class Recommender {
 //        songIdentifiers.subList(songIdentifiers.size() - 20, songIdentifiers.size()).clear();
 //        List<Double> centroidVector = recommender.generateCentroidVector(playlistSongMap.get("00s Rock Anthems"), 20);
 //        List<String> recommendations = recommender.recommendSongs(songIdentifiers, centroidVector, 10);
-//
-//        System.out.println(recommendations);
     }
 
     public int getVectorSize() {
