@@ -139,7 +139,7 @@ public class EvaluateResults {
 
             }
 
-            precision = precision / 72;
+            precision = precision / 230;
             System.out.println(precision);
         } catch (Exception e) {
             e.printStackTrace();
@@ -223,31 +223,6 @@ public class EvaluateResults {
         }
     }
 
-    public void getNonExistingPlaylists(List<String> validPlaylists) {
-        String line = "";
-        List<String> existingPlaylists = new ArrayList<>();
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader("DL-S200v8d500wRecall@K.csv"));
-            FileWriter csvWriter = new FileWriter("nonExistingPlaylists.csv", true);
-            while((line = br.readLine()) != null) {
-                String[] lineSplit = line.split(",");
-                existingPlaylists.add(lineSplit[0]);
-
-            }
-            for(String playlist: validPlaylists) {
-                if(!existingPlaylists.contains(playlist)){
-                    csvWriter.append(playlist);
-                    csvWriter.append("\n");
-                }
-            }
-            csvWriter.flush();
-            csvWriter.close();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
 
 
@@ -269,6 +244,5 @@ public class EvaluateResults {
  //       evaluateResults.averagePrecision();
         EvaluateRecommender evalRecommender = new EvaluateRecommender();
         List<String> existingPlaylists = evalRecommender.getValidPlaylists();
-        evaluateResults.getNonExistingPlaylists(existingPlaylists);
     }
 }
