@@ -69,7 +69,7 @@ public class EmbeddingsEvaluation {
         EmbeddingsEvaluation e = new EmbeddingsEvaluation();
 
         Recommender recommender = new Recommender();
-        recommender.setSongEmbeddingsFile("Spotify200v8d500w.csv");
+        recommender.setSongEmbeddingsFile("SMAEmbeddings.csv");
         HashMap<String, List<Double>> songVectorMap = recommender.createSongVectorMap();
         List<Double> centroidVector1 =  e.getCentroidVector(recommender, songVectorMap);
         double avgCosSim1 = e.getAverageCosineSimilarity(centroidVector1, recommender, songVectorMap);
