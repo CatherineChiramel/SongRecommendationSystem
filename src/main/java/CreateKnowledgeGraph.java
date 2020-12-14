@@ -154,6 +154,7 @@ public class CreateKnowledgeGraph {
                         this.addIndividualFeature(columnTitles, row, properties.get(i));
                 }
                 this.addIndividualSong(columnTitles, row, properties);
+                //System.out.println("");
             }
 
             csvReader.close();
