@@ -5,12 +5,13 @@ import java.util.*;
  * Class to generate recommendations for song playlists
  */
 public class Recommender {
-
+    static File dataDirectory = new File("../../../../SongData/");
+    static File resultDirectory = new File("../../../../Results/");
     public HashMap<String, List<Double>> songVectorMap;
     public int vectorSize = 200;
     protected String playlistsNameFile = "uniquePlaylists.csv";
-    protected String SongEmbeddingsFile = "SMAEmbeddings.csv";
-    protected String playlistSongsFile = "playlistSongs.csv";
+    protected String SongEmbeddingsFile = dataDirectory.getAbsolutePath() + "Embeddings/SMAEmbeddings.csv";
+    protected String playlistSongsFile = dataDirectory.getAbsolutePath() + "playlistSongs.csv";
 
 
 
@@ -56,7 +57,7 @@ public class Recommender {
                 .forEachOrdered(x -> sortedMap.put(x.getKey(), x.getValue()));
         FileWriter csvWriter = null;
         try {
-            csvWriter = new FileWriter("uniquePlaylistsNew.csv");
+            csvWriter = new FileWriter(dataDirectory.getAbsolutePath() + "uniquePlaylistsNew.csv");
             for(String key: sortedMap.keySet()) {
                 System.out.println(key + ": " + sortedMap.get(key));
                 if(sortedMap.get(key) >= 30) {
@@ -83,7 +84,7 @@ public class Recommender {
         try {
 
             BufferedReader br = new BufferedReader(new FileReader("validPlaylists.csv"));
-            FileWriter csvWriter = new FileWriter("SMAPlaylistVectors.csv");
+            FileWriter csvWriter = new FileWriter(dataDirectory.getAbsolutePath() + "PlaylistVectors/SMAPlaylistVectors.csv");
             while((playlist = br.readLine()) != null) {
                 System.out.println(playlist);
                 System.out.println(playlistSongMap.get(playlist));

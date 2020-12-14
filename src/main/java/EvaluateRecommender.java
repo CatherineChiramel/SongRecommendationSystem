@@ -1,13 +1,13 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 /**
  * Class to generate recommedations for the playlist in a dataset and write the results to a file
  */
 public class EvaluateRecommender {
+    static File dataDirectory = new File("../../../../SongData/");
+    static File resultDirectory = new File("../../../../Results/");
+
     protected Recommender recommender;
     protected List<String> playlistNames;
     protected HashMap<String, List<String>> playlistSongMap;
@@ -66,7 +66,7 @@ public class EvaluateRecommender {
                 }
             }
         List<Double> centroidVector = this.recommender.generateCentroidVector(this.playlistSongMap.get(playlistName), 200);
-        List<String> recommendations = this.recommender.recommendSongs(trainSongs, centroidVector, 10050);
+        List<String> recommendations = this.recommender.recommendSongs(trainSongs, centroidVector, 100);
 
         return recommendations;
     }
@@ -79,7 +79,7 @@ public class EvaluateRecommender {
         String line = "";
         List<String> playlistNames = new ArrayList<String>();
         try {
-            BufferedReader br = new BufferedReader(new FileReader("validPlaylists.csv"));
+            BufferedReader br = new BufferedReader(new FileReader(dataDirectory.getAbsolutePath() + "validPlaylists.csv"));
 
             while((line = br.readLine()) != null) {
                 playlistNames.add(line);
@@ -99,10 +99,10 @@ public class EvaluateRecommender {
         List<String> playlistNames = evaluateRecommender.recommender.getPlaylistNames();
         List<String> validPlaylists = evaluateRecommender.getValidPlaylists();
         FileWriter textWriter = null;
-        evaluateRecommender.recommender.setPlaylistSongsFile("SpotifyMusicBrainz.csv");
+        evaluateRecommender.recommender.setPlaylistSongsFile(dataDirectory.getAbsolutePath() + "Dataset/SpotifyMusicBrainz.csv");
         try {
 
-            textWriter = new FileWriter("BaseSpotifyResults.txt");
+            textWriter = new FileWriter(resultDirectory.getAbsolutePath() + "BaseSpotifyResults.txt");
             for(String playlist: validPlaylists) {
                 List<String> recommendations = evaluateRecommender.getRecommendation(playlist);
                 //System.out.println(recommendations);

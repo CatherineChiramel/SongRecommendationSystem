@@ -1,4 +1,5 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.*;
@@ -11,6 +12,8 @@ public class EvaluateResults {
     Map<String, List<Integer>> playlistResults = new HashMap<>();
     List<Integer> k_Values = new ArrayList<>();
     List<String> existingPlaylists = new ArrayList<>();
+    static File dataDirectory = new File("../../../../SongData/");
+    static File resultDirectory = new File("../../../../Results/");
 
     EvaluateResults(){
         this.k_Values.add(10);
@@ -35,7 +38,7 @@ public class EvaluateResults {
             csvRow += precision + ",";
         }
         try{
-            FileWriter csvWriter = new FileWriter("B-SpotifyPrecision@K.csv", true);
+            FileWriter csvWriter = new FileWriter(resultDirectory.getAbsolutePath() + "Precision@K/B-M_Precision@K.csv", true);
             csvWriter.append(csvRow);
             csvWriter.append("\n");
             csvWriter.flush();
@@ -63,7 +66,7 @@ public class EvaluateResults {
             csvRow += recall + ",";
         }
         try{
-            FileWriter csvWriter = new FileWriter("B-SLHRecall@K.csv", true);
+            FileWriter csvWriter = new FileWriter(resultDirectory.getAbsolutePath() + "Recall@K/B-M_Recall@K.csv", true);
             csvWriter.append(csvRow);
             csvWriter.append("\n");
             csvWriter.flush();
@@ -104,7 +107,7 @@ public class EvaluateResults {
         String currentPlaylist = "";
         try {
             BufferedReader br = new BufferedReader(new FileReader(filename));
-            FileWriter csvWriter = new FileWriter("SpotifyExpressionAccuracy.csv", true);
+            FileWriter csvWriter = new FileWriter(resultDirectory.getAbsolutePath() + "MExpressionAccuracy.csv", true);
             while((line = br.readLine()) != null) {
                 csvRow = "";
                 String[] lineSplit = line.split("[:#]");
@@ -125,26 +128,6 @@ public class EvaluateResults {
         }
     }
 
-    protected void averagePrecision() {
-        String line = "";
-        int count =0;
-        Double precision = 0.0;
-        String currentPlaylist = "";
-        try {
-            BufferedReader br = new BufferedReader(new FileReader("DL-SLHRecall@K.csv"));
-            while((line = br.readLine()) != null) {
-                String[] lineSplit = line.split(",");
-                if(this.existingPlaylists.contains(lineSplit[0]))
-                    precision += Double.parseDouble(lineSplit[1]);
-
-            }
-
-            precision = precision / 230;
-            System.out.println(precision);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     protected void existingPlaylists(String filename) {
         String line = "";
@@ -213,7 +196,7 @@ public class EvaluateResults {
             }
 
         try{
-            FileWriter csvWriter = new FileWriter("DL-SMAP@K.csv", true);
+            FileWriter csvWriter = new FileWriter(resultDirectory.getAbsolutePath() + "MAP@K/DL-SMAP@K.csv", true);
             csvWriter.append(csvRow);
             csvWriter.append("\n");
             csvWriter.flush();

@@ -12,13 +12,15 @@ public class CreateKnowledgeGraph {
     protected PrintWriter writer;
     protected String RDFfilename;
     protected List<String> addedFeatures;
+    static File dataDirectory = new File("../../../../SongData/");
+    static File resultDirectory = new File("../../../../Results/");
 
     /**
      * Constructor initialised with the default values
      */
     CreateKnowledgeGraph(){
         this.prefixURI = "http://upb.de/Music#";
-        this.RDFfilename = "MAKG.owl";
+        this.RDFfilename = dataDirectory.getAbsolutePath() + "KG/MAKG.owl";
         this.addedFeatures = new ArrayList<>();
 //        try {
 //            this.writer = new PrintWriter(new BufferedWriter(new FileWriter(this.RDFfilename, true)));
@@ -162,7 +164,7 @@ public class CreateKnowledgeGraph {
 
 
     public static void main(String[] args) {
-        String songDataFile = "MusicBrainzAcousticBrain.csv";
+        String songDataFile =  dataDirectory.getAbsolutePath() + "Dataset/MusicBrainzAcousticBrain.csv";
         List<String> properties = new ArrayList<>();
         properties.add("Artist");
         properties.add("Language");

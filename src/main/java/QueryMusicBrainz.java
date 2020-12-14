@@ -2,6 +2,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.net.URI;
@@ -17,13 +18,15 @@ import java.util.List;
  */
 public class QueryMusicBrainz {
     protected List<String> existingSongs = new ArrayList<>();
+    static File dataDirectory = new File("../../../../SongData/");
+    static File resultDirectory = new File("../../../../Results/");
 
     /**
      * Get the songs for which data is already retrieved.
      */
     public void getExistingSongs() {
         try {
-            BufferedReader csvReader = new BufferedReader(new FileReader("MusicBrainzEncodedFinal.csv"));
+            BufferedReader csvReader = new BufferedReader(new FileReader("MusicBrainzEncoded.csv"));
             String columnHeadings = csvReader.readLine();
             String row;
 
@@ -291,7 +294,7 @@ public class QueryMusicBrainz {
     }
 
     public void writeToCSV(List<String> songInfo) throws Exception {
-        FileWriter csvWriter = new FileWriter("MusicBrainzEncodedFinal.csv", true);
+        FileWriter csvWriter = new FileWriter("Dataset/MusicBrainzEncodedFinal.csv", true);
         System.out.println(songInfo.get(0));
         csvWriter.append(String.join(",", songInfo));
         csvWriter.append("\n");
